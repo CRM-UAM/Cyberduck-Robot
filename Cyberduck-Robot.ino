@@ -1,5 +1,4 @@
 // L298n pins (For motors)
-
 #define right_in1 2
 #define right_in2 3
 #define left_in3 4
@@ -7,12 +6,18 @@
 #define enableLeft 10 //ENB
 #define enableRight 11 //ENA
 
+// Motors
+#define stdSpeed 230
+
 // Sensors
 const int sensorCount = 3;
 int sensorPins[sensorCount] = {6, 7, 8}; // From left to right (travelwise)
 int sensorValues[sensorCount];
 
 //PID
+int pid = 0;
+int pid_left = 0;
+int pid_right = 0;
 int error = 0;
 int previous_error = 0;
 
@@ -46,13 +51,14 @@ void setup(){
 
 void loop(){
   
-   Serial.print("Sensors left to right: ");
+  /*Serial.print("Sensors left to right: ");
   for(int i = 0; i < sensorCount; i++){
     Serial.print(sensorValues[i]);
   }
   Serial.println();
-  delay(1000);
- 
+  delay(1000);*/
+
+  forwardMovement(255, 255);
 }
 
 // @brief This method will update the array sensorValues with the current digital read of all the sensors in the array
@@ -99,7 +105,18 @@ void robot_movement(){
       error = 0;
       break;
   }
-  
+
+  pid = pid_steering_value();
+  pid_left = stdSpeed - pid;
+  pid_right = stdSpeed + pid;
+
+  if(pid_left < 0) pid_left = 0;
+  else if(pid_left > 255) pid_left = 255;
+
+  if(pid_right < 0) pid_right = 0;
+  else if(pid_right > 255) pid_right = 255; 
+
+  forwardMovement(pid_left, pid_right);
 }
 
 void forwardMovement(int speedLeft, int speedRight){
