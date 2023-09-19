@@ -18,12 +18,13 @@ Almost all components are repurporsed from previous projects or recycled from di
 - L298n Motor Driver
 - DC Gear Motor with Tire Wheels. Gear rate 1:48. 240 rpm.
 - IR Sensor module (https://www.amazon.es/dp/B07G38MXW8?psc=1&ref=ppx_yo2ov_dt_b_product_details)
-- 4 AA battery holder
+- 6 AA battery holder
 - Caster Wheel
 - SG90 Servo
 - Plastic piece to tuck inside the duck's head (In my case, it is a plastic gear)
+- Rubber Duck (of course)
 
-The chassis is made out of old notebooks covers glued together. Duct tape was used to embellish it. Above the chassis we can find Cyberduck with the Arduino Uno inside its body, a servo inside its neck and the laser pointer thrusted into its beak. I also used discarded 3D printed pieces for the bumper I glued the IR sensors to.
+The chassis is made out of old notebooks covers glued together. Duct tape was used to embellish it. Above the chassis we can find Cyberduck with the Arduino Uno inside its body, a servo inside its neck and the laser pointer thrusted into its beak. I also used discarded 3D printed pieces for the bumper I glued the IR sensors to. As for the hubcaps in the robot's wheels, two plastic bottle caps were used. 
 
 Other
 
