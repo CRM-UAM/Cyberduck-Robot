@@ -11,28 +11,10 @@
 
 // Sensors
 const int sensorCount = 5;
-int sensorPins[sensorCount] = {8, 7, 6, 12, 13}; // From left to right (travelwise)
+int sensorPins[] = {8, 7, 6, 12, 13}; // From left to right (travelwise)
 int sensorValues[sensorCount];
-
-//PID
-int pid = 0;
-int pid_left = 0;
-int pid_right = 0;
-int error = 0;
 int previous_error = 0;
-
-// Proportional Control
-const int kp = 1;
-
-// Integral control
-int integral = 0;
-const int ki = 1;
-
-// Derivative control
-int derivative = 0;
-const int kd = 1;
-
-
+int error = 0;
 
 void setup(){
     pinMode(left_in3, OUTPUT);
@@ -50,18 +32,8 @@ void setup(){
 }
 
 void loop(){
-  /*
-  Serial.print("Sensors left to right: ");
-  for(int i = 0; i < sensorCount; i++){
-    Serial.print(sensorValues[i]);
-  }
-  Serial.println();
-  delay(1000);
-  */
-
-  robot_movement();
-
-  //test_motor();
+  control_robot();
+  
 }
 
 // @brief This method will update the array sensorValues with the current digital read of all the sensors in the array
@@ -71,99 +43,67 @@ void readSensors(){
   }
 }
 
-void robot_movement(){
-  readSensors(); // (0 0 1 1 0)
+void control_robot(){
+  readSensors();
   int sensorCum =0;
 
   // Calculate the accomulative sensors value
   for(int i = 0; i < sensorCount; i++){
+    Serial.print(sensorValues[i]);
     sensorCum += sensorValues[i] * pow(2, sensorCount-1-i);
-    
+    Serial.print("-");
+    Serial.print(pow(2,i));
+    Serial.println("*");
   }
 
-  // Get the error for the current disposition of sensors
-  
-  previous_error = error;
-  integral += previous_error;
+  Serial.println();
+  Serial.println(sensorCum);
   
   switch(sensorCum){
-    case 0b11111: 
+    case 0b00000: 
       // Leftwards of the track
       if(previous_error < 0) error = -3;
       // Rightwards of the track
       else error = 3;
      break;
     
-    case 0b10111:
-      error = -1;
+    case 0b01000:
+      error = 1;
+      //Serial.print("hola");
       break;
-
-    case 0b11101:
+    
+    case 0b00010:
       error = 1;
       break;
 
-    case 0b01111:
-      error = -2;
-      break;
-
-     case 0b11110:
+    case 0b10000:
       error = 2;
       break;
-          
-    // In either case we want to continue moving straight
-    case 0b11011:
-    case 0b00000:
-      error = 0;
+      
+    case 0b00001:
+      error = 2;
       break;
 
-     default:
-      // Leftwards of the track
-      if(previous_error < 0) error = -3;
-      // Rightwards of the track
-      else error = 3;
-     break;
-  }
-  
-  derivative = error-previous_error;
-
-  if(error < 0){
-    pid_left *= -1;
-  }else if(error > 0){
-    pid_right *= -1;
+    // e.g.: 01011, which is an unlikely case, but we ought to consider it too 
+    // In either case we want to continue moving straight
+    case 0b00100:
+    case 0b11111:
+    default:
+      error = 0;
+      //Serial.print("adios");
+      break;
   }
 
-  pid = pid_steering_value();
-  pid_left = stdSpeed + pid; //quizás lo tengo que invertir
-  pid_right = stdSpeed + pid;
+  previous_error = error;
 
-  if(pid_left < 0) pid_left = 0;
-  else if(pid_left > 255) pid_left = 255;
-
-  if(pid_right < 0) pid_right = 0;
-  else if(pid_right > 255) pid_right = 255; 
-
-  forwardMovement(pid_left, pid_right);
-
-  Serial.print(sensorCum);
-  Serial.print("\n");
-  Serial.print(error);
-  Serial.print("\n");
-  Serial.print(pid_left);
-  Serial.print(" ");
-  Serial.print(pid_right);
-  Serial.print("\n\n");
-  delay(1000);
-
-  /*
-  if(error < 0){
-    turnRight(pid_left, pid_right);
-  }else if(error > 0){
-    turnLeft(pid_left, pid_right);
+  //Serial.println(error);
+  if(error > 0){
+     turnLeft(stdSpeed, stdSpeed);
+  }else{
+     turnRight(stdSpeed, stdSpeed);
   }
-  else{
-    forwardMovement(pid_left, pid_right);
-  }
-  */
+ 
+  forwardMovement(stdSpeed, stdSpeed);
 }
 
 void forwardMovement(int speedLeft, int speedRight){
@@ -211,6 +151,10 @@ void test_motor(){
   delay(1500);
 }
 
-int pid_steering_value(){
-  return error * kp + integral * ki + derivative * kd;
+void test_sensorIR(){
+  Serial.print("Sensors left to right: ");
+  for(int i = 0; i < sensorCount; i++){
+    Serial.print(digitalRead(sensorPins[i]));
+  }
+  Serial.println();
 }
