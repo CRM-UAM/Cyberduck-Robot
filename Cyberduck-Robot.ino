@@ -15,6 +15,7 @@ int sensorPins[] = {8, 7, 6, 12, 13}; // From left to right (travelwise)
 int sensorValues[sensorCount];
 int previous_error = 0;
 int error = 0;
+bool wentLeft = false;
 
 void setup(){
     pinMode(left_in3, OUTPUT);
@@ -44,66 +45,69 @@ void readSensors(){
 }
 
 void control_robot(){
-  readSensors();
-  int sensorCum =0;
+  int value   readSensors();
 
-  // Calculate the accomulative sensors value
-  for(int i = 0; i < sensorCount; i++){
-    Serial.print(sensorValues[i]);
-    sensorCum += sensorValues[i] * pow(2, sensorCount-1-i);
-    Serial.print("-");
-    Serial.print(pow(2,i));
-    Serial.println("*");
+  // Go forward
+  if(((sensorValues[4] == 0 && sensorValues[3] == 0) && (sensorValues[2] == 1 && sensorValues[1] == 0)) && sensorValues[0] == 0){
+    forwardMovement(stdSpeed, stdSpeed);
+    wentLeft = false;
+  }else if(((sensorValues[4] == 0 && sensorValues[3] == 1) && (sensorValues[2] == 1 && sensorValues[1] == 1)) && sensorValues[0] == 0){
+    forwardMovement(stdSpeed, stdSpeed);
+    wentLeft = false;
+  }else if(((sensorValues[4] == 1 && sensorValues[3] == 1) && (sensorValues[2] == 1 && sensorValues[1] == 1)) && sensorValues[0] == 1){
+    forwardMovement(stdSpeed, stdSpeed);
+    wentLeft = false;
   }
-
-  Serial.println();
-  Serial.println(sensorCum);
   
-  switch(sensorCum){
-    case 0b00000: 
-      // Leftwards of the track
-      if(previous_error < 0) error = -3;
-      // Rightwards of the track
-      else error = 3;
-     break;
-    
-    case 0b01000:
-      error = 1;
-      //Serial.print("hola");
-      break;
-    
-    case 0b00010:
-      error = 1;
-      break;
-
-    case 0b10000:
-      error = 2;
-      break;
-      
-    case 0b00001:
-      error = 2;
-      break;
-
-    // e.g.: 01011, which is an unlikely case, but we ought to consider it too 
-    // In either case we want to continue moving straight
-    case 0b00100:
-    case 0b11111:
-    default:
-      error = 0;
-      //Serial.print("adios");
-      break;
+  // Go left fast
+  else if(((sensorValues[4] == 1 && sensorValues[3] == 0) && (sensorValues[2] == 0 && sensorValues[1] == 0)) && sensorValues[0] == 0){      
+    turnLeft(stdSpeed, stdSpeed);
+    wentLeft = true;
+  }else if(((sensorValues[4] == 1 && sensorValues[3] == 1) && (sensorValues[2] == 0 && sensorValues[1] == 0)) && sensorValues[0] == 0){
+    turnLeft(stdSpeed, stdSpeed);
+    wentLeft = true;
   }
 
-  previous_error = error;
-
-  //Serial.println(error);
-  if(error > 0){
-     turnLeft(stdSpeed, stdSpeed);
-  }else{
-     turnRight(stdSpeed, stdSpeed);
+  // Go left medium speed
+  else if(((sensorValues[4] == 0 && sensorValues[3] == 1) && (sensorValues[2] == 1 && sensorValues[1] == 0)) && sensorValues[0] == 0){    
+    turnLeft(stdSpeed/2, stdSpeed/2);
+    wentLeft = true;
+  }else(((sensorValues[4] == 0 && sensorValues[3] == 1) && (sensorValues[2] == 0 && sensorValues[1] == 0)) && sensorValues[0] == 0){    
+    turnLeft(stdSpeed/2, stdSpeed/2);  
+    wentLeft = true;  
   }
- 
-  forwardMovement(stdSpeed, stdSpeed);
+
+  // Go right fast
+  else if(((sensorValues[4] == 0 && sensorValues[3] == 0) && (sensorValues[2] == 0 && sensorValues[1] == 1)) && sensorValues[0] == 1){
+    turnRight(stdSpeed, stdSpeed);
+    wentLeft = false;
+  }
+  else if(((sensorValues[4] == 0 && sensorValues[3] == 0) && (sensorValues[2] == 0 && sensorValues[1] == 0)) && sensorValues[0] == 1){
+    turnRight(stdSpeed, stdSpeed);
+    wentLeft = false;
+  }
+
+  // Go right medium speed
+  else if(((sensorValues[4] == 0 && sensorValues[3] == 0) && (sensorValues[2] == 1 && sensorValues[1] == 1)) && sensorValues[0] == 0){
+    turnRight(stdSpeed/2, stdSpeed/2);
+    wentLeft = false;
+  }
+  else if(((sensorValues[4] == 0 && sensorValues[3] == 0) && (sensorValues[2] == 0 && sensorValues[1] == 1)) && sensorValues[0] == 0){
+    turnRight(stdSpeed/2, stdSpeed/2);
+    wentLeft = false;
+  }
+
+  // Locate if fully out of line or in weird cases
+  else{
+    if(wentLeft == True){
+      turnRight(stdSpeed, stdSpeed);
+      wentLeft = false;
+    }else{
+      turnLeft(stdSpeed, stdSpeed);
+      wentLeft = true;
+    }
+  }
+
 }
 
 void forwardMovement(int speedLeft, int speedRight){
