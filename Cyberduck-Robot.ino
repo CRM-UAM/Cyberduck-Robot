@@ -45,7 +45,7 @@ void readSensors(){
 }
 
 void control_robot(){
-  int value   readSensors();
+  readSensors();
 
   // Go forward
   if(((sensorValues[4] == 0 && sensorValues[3] == 0) && (sensorValues[2] == 1 && sensorValues[1] == 0)) && sensorValues[0] == 0){
@@ -72,7 +72,7 @@ void control_robot(){
   else if(((sensorValues[4] == 0 && sensorValues[3] == 1) && (sensorValues[2] == 1 && sensorValues[1] == 0)) && sensorValues[0] == 0){    
     turnLeft(stdSpeed/2, stdSpeed/2);
     wentLeft = true;
-  }else(((sensorValues[4] == 0 && sensorValues[3] == 1) && (sensorValues[2] == 0 && sensorValues[1] == 0)) && sensorValues[0] == 0){    
+  }else if(((sensorValues[4] == 0 && sensorValues[3] == 1) && (sensorValues[2] == 0 && sensorValues[1] == 0)) && sensorValues[0] == 0){    
     turnLeft(stdSpeed/2, stdSpeed/2);  
     wentLeft = true;  
   }
@@ -99,7 +99,7 @@ void control_robot(){
 
   // Locate if fully out of line or in weird cases
   else{
-    if(wentLeft == True){
+    if(wentLeft == true){
       turnRight(stdSpeed, stdSpeed);
       wentLeft = false;
     }else{
