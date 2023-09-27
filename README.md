@@ -40,4 +40,4 @@ Other
 
 ## Acknowledgments
 
-I extend my sincere gratitude to Carlos G. S. for his invaluable assistance throughout the project
+I extend my sincere gratitude to Carlos G. S. and Carmen G. M. for their invaluable assistance throughout the project
