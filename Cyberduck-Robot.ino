@@ -9,13 +9,20 @@
 // Motors
 #define stdSpeed 100
 
+enum DirectionTaken{
+  FWD,
+  RIGHT,
+  LEFT,
+  NONE
+};
+
 // Sensors
 const int sensorCount = 5;
 int sensorPins[] = {8, 7, 6, 12, 13}; // From left to right (travelwise)
 int sensorValues[sensorCount];
 int previous_error = 0;
 int error = 0;
-bool wentLeft = false;
+DirectionTaken dir = NONE;
 
 void setup(){
     pinMode(left_in3, OUTPUT);
@@ -33,9 +40,7 @@ void setup(){
 }
 
 void loop(){
-  //control_robot();
-  //test_motor();
-  turnLeft(100, 100);
+  control_robot();
 }
 
 // @brief This method will update the array sensorValues with the current digital read of all the sensors in the array
@@ -51,60 +56,52 @@ void control_robot(){
 
   // Calculate the accomulative sensors value
   for(int i = 0; i < sensorCount; i++){
-    Serial.print(sensorValues[i]);
     sensorCum += sensorValues[i] * (1 << sensorCount-1-i); // pow is intended for floating point whereas with logical shifts we can work with integers without any interference
-    Serial.print("-");
-    Serial.print(pow(2,i));
-    Serial.println("*");
   }
 
   Serial.println();
-  Serial.println(sensorCum);
+  Serial.println(sensorCum, BIN);
   
-    delay(500);
+    //delay(500);
   
   switch(sensorCum){
-    case 0b00000: 
-      // Leftwards of the track
-      if(previous_error < 0) error = -3;
-      // Rightwards of the track
-      else error = 3;
-     break;
-    
-    case 0b01000:
-      error = 1;
-      //Serial.print("hola");
-      break;
-    
-    case 0b00010:
-      error = 1;
-      break;
-
     case 0b10000:
-      error = 2;
+    case 0b01000:
+    case 0b11000:
+    case 0b00111:
+      turnRight(stdSpeed);
+      Serial.print("Going right");
+      dir = RIGHT;
       break;
       
     case 0b00001:
-      error = 2;
+    case 0b00010:
+    case 0b00011:
+    case 0b11100:
+      turnLeft(stdSpeed);
+      Serial.print("Going left");
+      dir = LEFT;
       break;
 
     // e.g.: 01011, which is an unlikely case, but we ought to consider it too 
     // In either case we want to continue moving straight
+    case 0b01100:
+    case 0b00110:
     case 0b00100:
+    case 0b01110:
     case 0b11111:
-    default:
-      error = 0;
-      //Serial.print("adios");
+      forwardMovement(stdSpeed, stdSpeed);
+      Serial.print("Going forward");
+      dir = FWD;
       break;
-  }
 
-  previous_error = error;
-
-  //Serial.println(error);
-  if(error > 0){
-     turnLeft(stdSpeed, stdSpeed);
-  }else{
-     turnRight(stdSpeed, stdSpeed);
+    default:
+      // Leftwards of the track
+      if(dir == LEFT) turnLeft(stdSpeed);
+      else if(dir == RIGHT) turnRight(stdSpeed);
+      // Rightwards of the track
+      else forwardMovement(stdSpeed, stdSpeed);
+      break;
   }
  
   forwardMovement(stdSpeed, stdSpeed);
@@ -122,7 +119,7 @@ void forwardMovement(int speedLeft, int speedRight){
   analogWrite(enableRight, speedRight);  
 }
 
-void turnLeft(int speedLeft, int speedRight){
+void turnLeft(int speedRight){
   // Left wheel
   digitalWrite(left_in3, LOW);
   digitalWrite(left_in4, LOW);
@@ -133,7 +130,7 @@ void turnLeft(int speedLeft, int speedRight){
   analogWrite(enableRight, speedRight);  
 }
 
-void turnRight(int speedLeft, int speedRight){
+void turnRight(int speedLeft){
   // Left wheel
   digitalWrite(left_in3, LOW);
   digitalWrite(left_in4, HIGH);
@@ -147,9 +144,9 @@ void turnRight(int speedLeft, int speedRight){
 void test_motor(){
   forwardMovement(stdSpeed, stdSpeed);
   delay(3000);
-  turnLeft(stdSpeed, stdSpeed);
+  turnLeft(stdSpeed);
   delay(1500);
-  turnRight(stdSpeed, stdSpeed);
+  turnRight(stdSpeed);
   delay(1500);
 }
 
