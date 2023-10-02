@@ -7,7 +7,7 @@
 #define enableRight 11 //ENA
 
 // Motors
-#define stdSpeed 230
+#define stdSpeed 100
 
 // Sensors
 const int sensorCount = 5;
@@ -33,8 +33,9 @@ void setup(){
 }
 
 void loop(){
-  control_robot();
-  
+  //control_robot();
+  //test_motor();
+  turnLeft(100, 100);
 }
 
 // @brief This method will update the array sensorValues with the current digital read of all the sensors in the array
@@ -46,68 +47,67 @@ void readSensors(){
 
 void control_robot(){
   readSensors();
+  int sensorCum =0;
 
-  // Go forward
-  if(((sensorValues[4] == 0 && sensorValues[3] == 0) && (sensorValues[2] == 1 && sensorValues[1] == 0)) && sensorValues[0] == 0){
-    forwardMovement(stdSpeed, stdSpeed);
-    wentLeft = false;
-  }else if(((sensorValues[4] == 0 && sensorValues[3] == 1) && (sensorValues[2] == 1 && sensorValues[1] == 1)) && sensorValues[0] == 0){
-    forwardMovement(stdSpeed, stdSpeed);
-    wentLeft = false;
-  }else if(((sensorValues[4] == 1 && sensorValues[3] == 1) && (sensorValues[2] == 1 && sensorValues[1] == 1)) && sensorValues[0] == 1){
-    forwardMovement(stdSpeed, stdSpeed);
-    wentLeft = false;
+  // Calculate the accomulative sensors value
+  for(int i = 0; i < sensorCount; i++){
+    Serial.print(sensorValues[i]);
+    sensorCum += sensorValues[i] * (1 << sensorCount-1-i); // pow is intended for floating point whereas with logical shifts we can work with integers without any interference
+    Serial.print("-");
+    Serial.print(pow(2,i));
+    Serial.println("*");
   }
+
+  Serial.println();
+  Serial.println(sensorCum);
   
-  // Go left fast
-  else if(((sensorValues[4] == 1 && sensorValues[3] == 0) && (sensorValues[2] == 0 && sensorValues[1] == 0)) && sensorValues[0] == 0){      
-    turnLeft(stdSpeed, stdSpeed);
-    wentLeft = true;
-  }else if(((sensorValues[4] == 1 && sensorValues[3] == 1) && (sensorValues[2] == 0 && sensorValues[1] == 0)) && sensorValues[0] == 0){
-    turnLeft(stdSpeed, stdSpeed);
-    wentLeft = true;
+    delay(500);
+  
+  switch(sensorCum){
+    case 0b00000: 
+      // Leftwards of the track
+      if(previous_error < 0) error = -3;
+      // Rightwards of the track
+      else error = 3;
+     break;
+    
+    case 0b01000:
+      error = 1;
+      //Serial.print("hola");
+      break;
+    
+    case 0b00010:
+      error = 1;
+      break;
+
+    case 0b10000:
+      error = 2;
+      break;
+      
+    case 0b00001:
+      error = 2;
+      break;
+
+    // e.g.: 01011, which is an unlikely case, but we ought to consider it too 
+    // In either case we want to continue moving straight
+    case 0b00100:
+    case 0b11111:
+    default:
+      error = 0;
+      //Serial.print("adios");
+      break;
   }
 
-  // Go left medium speed
-  else if(((sensorValues[4] == 0 && sensorValues[3] == 1) && (sensorValues[2] == 1 && sensorValues[1] == 0)) && sensorValues[0] == 0){    
-    turnLeft(stdSpeed/2, stdSpeed/2);
-    wentLeft = true;
-  }else if(((sensorValues[4] == 0 && sensorValues[3] == 1) && (sensorValues[2] == 0 && sensorValues[1] == 0)) && sensorValues[0] == 0){    
-    turnLeft(stdSpeed/2, stdSpeed/2);  
-    wentLeft = true;  
-  }
+  previous_error = error;
 
-  // Go right fast
-  else if(((sensorValues[4] == 0 && sensorValues[3] == 0) && (sensorValues[2] == 0 && sensorValues[1] == 1)) && sensorValues[0] == 1){
-    turnRight(stdSpeed, stdSpeed);
-    wentLeft = false;
+  //Serial.println(error);
+  if(error > 0){
+     turnLeft(stdSpeed, stdSpeed);
+  }else{
+     turnRight(stdSpeed, stdSpeed);
   }
-  else if(((sensorValues[4] == 0 && sensorValues[3] == 0) && (sensorValues[2] == 0 && sensorValues[1] == 0)) && sensorValues[0] == 1){
-    turnRight(stdSpeed, stdSpeed);
-    wentLeft = false;
-  }
-
-  // Go right medium speed
-  else if(((sensorValues[4] == 0 && sensorValues[3] == 0) && (sensorValues[2] == 1 && sensorValues[1] == 1)) && sensorValues[0] == 0){
-    turnRight(stdSpeed/2, stdSpeed/2);
-    wentLeft = false;
-  }
-  else if(((sensorValues[4] == 0 && sensorValues[3] == 0) && (sensorValues[2] == 0 && sensorValues[1] == 1)) && sensorValues[0] == 0){
-    turnRight(stdSpeed/2, stdSpeed/2);
-    wentLeft = false;
-  }
-
-  // Locate if fully out of line or in weird cases
-  else{
-    if(wentLeft == true){
-      turnRight(stdSpeed, stdSpeed);
-      wentLeft = false;
-    }else{
-      turnLeft(stdSpeed, stdSpeed);
-      wentLeft = true;
-    }
-  }
-
+ 
+  forwardMovement(stdSpeed, stdSpeed);
 }
 
 void forwardMovement(int speedLeft, int speedRight){
@@ -117,20 +117,19 @@ void forwardMovement(int speedLeft, int speedRight){
   analogWrite(enableLeft, speedLeft);
 
   // Right wheel
-  digitalWrite(right_in1, LOW);
-  digitalWrite(right_in2, HIGH);
+  digitalWrite(right_in1, HIGH);
+  digitalWrite(right_in2, LOW);
   analogWrite(enableRight, speedRight);  
 }
 
 void turnLeft(int speedLeft, int speedRight){
   // Left wheel
-  digitalWrite(left_in3, HIGH);
+  digitalWrite(left_in3, LOW);
   digitalWrite(left_in4, LOW);
-  analogWrite(enableLeft, speedLeft);
 
   // Right wheel
-  digitalWrite(right_in1, LOW);
-  digitalWrite(right_in2, HIGH);
+  digitalWrite(right_in1, HIGH);
+  digitalWrite(right_in2, LOW);
   analogWrite(enableRight, speedRight);  
 }
 
@@ -141,9 +140,8 @@ void turnRight(int speedLeft, int speedRight){
   analogWrite(enableLeft, speedLeft);
 
   // Right wheel
-  digitalWrite(right_in1, HIGH);
+  digitalWrite(right_in1, LOW);
   digitalWrite(right_in2, LOW);
-  analogWrite(enableRight, speedRight);  
 }
 
 void test_motor(){
