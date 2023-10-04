@@ -6,7 +6,7 @@ The information displayed here is provided as is, you are using it at your own r
 
 ## Summary
 
-The principal goal of this project is to develop a line follower robot based on Arduino which uses 2 infrared sensors to keep on the track of the black 2cm wide line drawn on a white board. The original goal was to deploy a PID controlled robot, yet it became unattainable due to the constrained timeframe. Nevertheless, there exists a potential option (not illustrated in the circuit diagram but discernible in the images) to incorporate additional IR sensors for the purpose of executing a refined PID algorithm.
+The principal goal of this project is to develop a line follower robot based on Arduino which uses 2 infrared sensors to keep on the track of the black 2cm wide line drawn on a white board. The original goal was to deploy a PID controlled robot, yet it became unattainable due to the constrained timeframe. Nevertheless, there exists a potential option (not illustrated in the circuit diagram) to incorporate additional IR sensors for the purpose of executing a refined PID algorithm.
 
 ## Cyberduck Robot
 
