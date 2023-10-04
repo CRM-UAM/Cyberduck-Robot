@@ -5,11 +5,11 @@
 #define right_in2 3
 #define left_in3 4
 #define left_in4 5
-#define enableLeft 10 //ENB
+#define enableLeft 6 //ENB
 #define enableRight 11 //ENA
 
 // Motors
-#define stdSpeed 75
+#define stdSpeed 85
 
 // Servo
 Servo neck;
@@ -17,7 +17,7 @@ Servo neck;
 
 // Sensors
 const int sensorCount = 5;
-int sensorPins[] = {8, 7, 6, 12, 13}; // From left to right (travelwise)
+int sensorPins[] = {8, 7, 10, 12, 13}; // From left to right (travelwise)
 int sensorValues[sensorCount];
 
 void setup(){
@@ -38,11 +38,11 @@ void setup(){
 }
 
 void loop(){
-  //control_robot();
+  control_robot();
 
   //test_motor();
 
-  test_servo();
+  //test_servo();
 }
 
 // @brief This method will update the array sensorValues with the current digital read of all the sensors in the array
@@ -70,12 +70,16 @@ void control_robot(){
 
   if(left1 == 0 and right1 == 0){
     forwardMovement(stdSpeed, stdSpeed);
+    neck.write(90);
   }else if(left1 == 0 and right1 == 1){
     turnRight(stdSpeed);
+    neck.write(60);
   }else if(left1 == 1 and right1 ==0){
     turnLeft(stdSpeed);
+    neck.write(120);
   }else{
     forwardMovement(stdSpeed, stdSpeed);
+    neck.write(90);
   }
   
 
