@@ -35,6 +35,8 @@ The chassis is made out of old notebook covers stuck together with hot glue. Duc
 
 #### Circuit
 
+![circuit](https://github.com/CRM-UAM/Cyberduck-Robot/assets/80209320/03fecc09-20bd-4552-84c9-713715fb7199)
+
 ### Algorithm 
 
 A very straightforward algorithm was implemented. Given that sensors are positioned on both sides of the line, whenever one of the sensors detects the line, the robot immediately steers in the opposite direction. In other words, the robot is constantly avoiding getting over the line with the IR sensors. The whole code is implemented in the Cyberduck-Robot.ino file.
